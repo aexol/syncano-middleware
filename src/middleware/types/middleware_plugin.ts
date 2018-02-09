@@ -3,14 +3,14 @@ import {IOptions, IPluginOptions} from './options';
 import {createResult, IResult, IResultPayload} from './result';
 import {PRE} from './symbols';
 
-type pluginProcessFnType = (val: object, pluginOpts: object) => IResultPayload;
+export type PluginProcessFnType = (val: object, pluginOpts: object) => IResultPayload;
 
-function isPluginProcessFnType(o: object): o is pluginProcessFnType {
+function isPluginProcessFnType(o: object): o is PluginProcessFnType {
   return o instanceof Function;
 }
 
 export interface IPrePluginInterface {
-  preProcess: pluginProcessFnType;
+  preProcess: PluginProcessFnType;
 }
 
 function isIPrePluginInterface(o: object): o is IPrePluginInterface {
@@ -18,7 +18,7 @@ function isIPrePluginInterface(o: object): o is IPrePluginInterface {
 }
 
 export interface IPostPluginInterface {
-  postProcess: pluginProcessFnType;
+  postProcess: PluginProcessFnType;
 }
 
 function isIPostPluginInterface(o: object): o is IPostPluginInterface {

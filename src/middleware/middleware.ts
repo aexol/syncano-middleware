@@ -52,7 +52,7 @@ function wrapResponse(r: object): IResponse {
   });
 }
 
-type runnerFunction = (ctx: ISyncanoContext, syncano: object, result: object) => object;
+export type RunnerFunction = (ctx: ISyncanoContext, syncano: object, result: object) => object;
 
 interface IErrorWithDetails extends Error {
   details: object;
@@ -67,7 +67,7 @@ function handlePreprocessingError(e: (Error|IErrorWithDetails)): IResult {
   throw new errors.PreprocessingError({detailedMessage: e.message});
 }
 
-function executeMiddleware(fn: runnerFunction , middleware: IMiddlewarePayload, opts: IPluginOptions = {}) {
+function executeMiddleware(fn: RunnerFunction , middleware: IMiddlewarePayload, opts: IPluginOptions = {}) {
   return (ctx: ISyncanoContext) => {
     const syncano = Syncano(ctx);
     let middlewareObj: IMiddleware;
