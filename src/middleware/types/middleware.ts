@@ -1,5 +1,5 @@
-export {IMiddleware, IMiddlewarePayload, IMiddlewareParallel, IMiddlewareSeries} from './imiddleware';
-import {MiddlewareParallel} from './middleware_Parallel';
+import {IMiddleware, IMiddlewareParallel, IMiddlewarePayload, IMiddlewareSeries} from './imiddleware';
+import {MiddlewareParallel} from './middleware_parallel';
 import {MiddlewarePlugin} from './middleware_plugin';
 import {MiddlewareSeries} from './middleware_series';
 
@@ -19,7 +19,9 @@ export function createMiddleware(o: IMiddlewarePayload): IMiddleware {
     return new MiddlewareSeries(o.series.map(createMiddleware));
   }
   if (isIMiddlewareParallel(o)) {
-    return new MiddlewareParallel(o.series.map(createMiddleware));
+    return new MiddlewareParallel(o.parallel.map(createMiddleware));
   }
   throw new Error('${o} is not a middleware object');
 }
+
+export {IMiddlewarePayload} from './imiddleware';

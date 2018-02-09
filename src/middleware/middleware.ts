@@ -1,31 +1,11 @@
 import Syncano from '@syncano/core';
 import merge from 'lodash.merge';
-import {IMiddlewarePayload} from './types/middleware';
-import {createOptions} from './types/options';
-import {IResult} from './types/result';
-import {ERROR, OK} from './types/symbols';
-
-interface IResponsePayload {
-  payload: object;
-}
-
-function isIResponsePayload(o: object): o is IResponsePayload {
-  return 'payload' in o;
-}
-
-interface IResponseStatus {
-  status: number;
-}
-
-function isIResponseStatus(o: object): o is IResponseStatus {
-  return 'status' in o;
-}
-
-interface IResponse extends IResponsePayload, IResponseStatus {}
-
-function isIResponse(o: object): o is IResponse {
-  return isIResponsePayload(o) && isIResponseStatus(o);
-}
+import * as errors from './errors/errors';
+import {IMiddleware, ISyncanoContext} from './types/imiddleware';
+import {createMiddleware, IMiddlewarePayload} from './types/middleware';
+import {createOptions, IPluginOptions} from './types/options';
+import {IResponse ,isIResponse, isIResponsePayload, isIResponseStatus} from './types/response';
+import {createResult, IResult} from './types/result';
 
 class Response implements IResponse {
   constructor(public payload: object = {}, public status: number = 200) {}
@@ -56,7 +36,7 @@ function handleErrors(e: (Error|ISyncanoResponseError|IResponse)): IResponse {
   return new Response({message: e.message}, 500);
 }
 
-function finishResponse(r: object): IResponse {
+function wrapResponse(r: object): IResponse {
   if (isIResponse(r)) {
     return r;
   }
@@ -72,23 +52,41 @@ function finishResponse(r: object): IResponse {
   });
 }
 
-type runnerFunction = (ctx: object, syncano: object, result: IResult) => object;
+type runnerFunction = (ctx: ISyncanoContext, syncano: object, result: object) => object;
 
-function executeMiddleware(fn: runnerFunction , middleware: IMiddlewarePayload, opts: object = {}) {
-  return ctx => {
+interface IErrorWithDetails extends Error {
+  details: object;
+}
+function isIErrorWithDetails(o: object): o is IErrorWithDetails {
+  return 'details' in o;
+}
+function handlePreprocessingError(e: (Error|IErrorWithDetails)): IResult {
+  if (isIErrorWithDetails(e)) {
+    throw new errors.PreprocessingError(e.details);
+  }
+  throw new errors.PreprocessingError({detailedMessage: e.message});
+}
+
+function executeMiddleware(fn: runnerFunction , middleware: IMiddlewarePayload, opts: IPluginOptions = {}) {
+  return (ctx: ISyncanoContext) => {
     const syncano = Syncano(ctx);
-    return run(ctx, middleware, createOptions(opts))
-      .then(assertResultOK)
-      .then(ret => merge({args: ctx.args}, ret))
-      .then(ret => fn(ctx, syncano, ret))
-      .then(ret => run(result, middleware, merge(opts, {_phase: POST})))
+    let middlewareObj: IMiddleware;
+    try  {
+      middlewareObj = createMiddleware(middleware);
+    } catch (e) {
+      return syncano.response.json({message: e.message}, 500);
+    }
+    const ropts = createOptions(opts);
+    return middlewareObj.pre(ctx, ropts)
+      .catch(handlePreprocessingError)
+      .then(ret => createResult({data: {args: ctx.args}}).merge(ret))
+      .then(ret => fn(ctx, syncano, ret.data))
+      .then(wrapResponse)
+      .then(ret => middlewareObj.post(ret, ropts))
       .catch(handleErrors)
-      .then(r => finishResponse)
+      .then(wrapResponse)
       .then(r => syncano.response.json(r.payload, r.status));
   };
 }
-
-executeMiddleware.OK = OK;
-executeMiddleware.ERROR = ERROR;
 
 export default executeMiddleware;

@@ -1,27 +1,51 @@
-import {IMiddleware} from './imiddleware';
-import {IOptions} from './options';
+import {IMiddleware, ISyncanoContext} from './imiddleware';
+import {IOptions, IPluginOptions} from './options';
 import {createResult, IResult, IResultPayload} from './result';
 import {PRE} from './symbols';
 
 type pluginProcessFnType = (val: object, pluginOpts: object) => IResultPayload;
+
+function isPluginProcessFnType(o: object): o is pluginProcessFnType {
+  return o instanceof Function;
+}
+
+export interface IPrePluginInterface {
+  preProcess: pluginProcessFnType;
+}
+
+function isIPrePluginInterface(o: object): o is IPrePluginInterface {
+  return 'preProcess' in o;
+}
+
+export interface IPostPluginInterface {
+  postProcess: pluginProcessFnType;
+}
+
+function isIPostPluginInterface(o: object): o is IPostPluginInterface {
+  return 'postProcess' in o;
+}
+
 export class MiddlewarePlugin implements IMiddleware {
   constructor(public plugin: string) {}
-  public async run(v: object, opts: IOptions): Promise<IResult> {
-    return import(this.plugin)
-      .then(plugin => {
-        let pluginProcess: pluginProcessFnType = (val, pluginOpts) => ({});
-        if (opts.phase === PRE) {
-          if (plugin.preProcess) {
-            pluginProcess = pluginProcess;
-          } else if (typeof plugin === 'function') {
-            pluginProcess = plugin;
+  public async pre(v: ISyncanoContext, opts: IOptions): Promise<IResult> {
+        return import(this.plugin).then(plugin => {
+          const payload = {};
+          if (isIPrePluginInterface(plugin)) {
+            return plugin.preProcess(v, opts.pluginOpts[this.plugin]);
           }
-        } else {
-          if (plugin.postProcess) {
-            pluginProcess = plugin.postProcess;
+          if (isPluginProcessFnType(plugin)) {
+            return plugin(v, opts.pluginOpts[this.plugin]);
           }
-        }
-        return pluginProcess(v, opts.pluginOpts[this.plugin]);
-      }).then(createResult);
+          return undefined;
+        }).then(createResult);
+  }
+  public async post(v: object, opts: IOptions): Promise<IResult> {
+        return import(this.plugin).then(plugin => {
+          const payload = {};
+          if (isIPostPluginInterface(plugin)) {
+            return plugin.postProcess(v, opts.pluginOpts[this.plugin]);
+          }
+          return undefined;
+        }).then(createResult);
   }
 }

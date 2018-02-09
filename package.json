@@ -7,6 +7,9 @@
   "author": "Aexol",
   "license": "MIT",
   "private": false,
+  "scripts": {
+    "build": "npx tsc"
+  },
   "devDependencies": {
     "@types/lodash.merge": "^4.6.3",
     "@types/node": "^4.0.36",
