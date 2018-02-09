@@ -13,6 +13,8 @@ export {IPluginInterface,
   PluginPostProcessFnType,
 } from './types/middleware_plugin';
 export {IResultPayload} from './types/result';
+export {IResponse} from './types/response';
+export {ISyncanoContext} from './types/imiddleware';
 
 class Response implements IResponse {
   constructor(public payload: object = {}, public status: number = 200) {}
