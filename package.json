@@ -1,0 +1,10 @@
+{
+  "name": "syncano-middleware",
+  "version": "0.0.1",
+  "description": "Syncano middleware helper",
+  "main": "index.js",
+  "repository": "https://github.com/aexol/syncano-middleware",
+  "author": "Aexol",
+  "license": "MIT",
+  "private": false
+}
