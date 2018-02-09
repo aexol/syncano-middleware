@@ -1,70 +1,136 @@
 import merge from 'lodash.merge';
+import Syncano from '@syncano/core';
 
-function mergeNewResult(res, newRes) {
-  let status = res.status || 200;
-  res = merge(res, newRes);
-  if (res.status === 200 && status !== 200) {
-    res.status = status;
+const Status = Symbol('STATUS');
+const OK = Symbol('OK');
+const ERROR = Symbol('ERROR');
+const PRE = Symbol('PRE');
+const POST = Symbol('POST');
+const EXECUTOR = Symbol('EXECUTOR');
+
+function assertResultOK(res) {
+  if (res[Status] === ERROR) {
+    throw Object.assign(new Error('middleware error'), {
+      status: 400,
+      payload: {message: 'There was an error while processing your request'},
+      details: res
+    });
   }
   return res;
 }
 
+function mergeNewResult(res, newRes) {
+  return merge(
+    {[Status]: res[Status] === ERROR || newRes[Status] === ERROR ? ERROR : OK},
+    res,
+    newRes
+  );
+}
+
 function mergeNewResults(res, results) {
-  return results.reduce((acc, val) => mergeResult(acc, val), Object.assign(res))
+  return results.reduce((acc, val) => mergeResult(acc, val), merge({}, res));
 }
 
-function runSeries(ctx, series) {
-  return run(ctx, series[0])
-    .then(res => [
-      res,
-      res.status === 200 && series[1]
-        ? runSeries(ctx, series.slice(1))
-        : {}
-    ])
-    .then(([ret, resp]) => mergeNewResult(ret, resp));
+function runSeries(v, series, opts) {
+  return midObj.series.reduce(
+    (acc, val) =>
+      acc.then(state =>
+        run(v, val, opts)
+          .then(res => mergeNewResult(state, res))
+          .then(assertResultOK)
+      ),
+    Promise.resolve({})
+  );
 }
 
-function runParallel(ctx, parallel) {
-    return Promise.all(parallel.map(p => run(ctx, p))).then(values => mergeNewResults({}, values))
+function runParallel(val, parallel, opts) {
+  return Promise.all(midObj.parallel.map(p => run(val, p, opts))).then(values =>
+    mergeNewResults({}, values).then(assertResultOK)
+  );
 }
 
-function run(ctx, middlewareObject, opts) {
+function runPlugin(val, plugin, opts) {
+  const phase = opts._phase ? opts._phase : PRE;
+  const pluginModule = require(plugin);
+  let pluginProcess = () => ({});
+  if (phase === PRE) {
+    if (pluginModule.preProcess) {
+      pluginProcess = pluginProcess;
+    } else if (typeof plugin === 'function') {
+      pluginProcess = plugin;
+    }
+  } else {
+    if (pluginModule.postProcess) {
+      pluginProcess = plugin.postProcess;
+    }
+  }
+  let runResult;
+  try {
+    runResult = pluginProcess(val, opts[middlewareObject]);
+    if (typeof runResult.then !== 'function') {
+      runResult = Promise.resolve(runResult);
+    }
+  } catch (e) {
+    return Promise.reject(e);
+  }
+  return runResult;
+}
+
+function run(val, middlewareObject, opts) {
   if (typeof middlewareObject === 'string') {
-    return require(middlewareObject)(ctx, opts[middlewareObject])
+    return runPlugin(val, middlewareObject, opts);
   }
-  if (
-    Array.isArray(middlewareObject) ||
-    middlewareObject.series ||
-    middlewareObject.parallel
-  ) {
-    if (Array.isArray(middlewareObject)) {
-      middlewareObject = {
-        series: middlewareObject
-      };
-    }
-    let midObj = middlewareObject.series || middlewareObject.parallel;
-    let runArray = middlewareObject.series ? runSeries : runParallel;
-    if (Array.isArray(midObj)) {
-      return runArray(ctx, server, midObj);
-    }
+
+  if (opts._runner) {
+    const runner = opts._runner;
+    delete opts._runner;
+    return runner(val, middlewareObject, opts);
   }
-  return Promise.resolve({});
+
+  const {series, parallel = []} = Array.isArray(middlewareObject)
+    ? {series: middlewareObject}
+    : middlewareObject;
+
+  return run(
+    val,
+    series || parallel,
+    merge({}, opts, {
+      _runner: series ? runSeries : runParallel
+    })
+  );
 }
 
-export default (ctx, middleware, opts = {}) => {
-  const server = Server(ctx);
-  const { debug } = server.logger(ctx.meta.executor);
-  if (!ctx.meta.admin) {
-    return server.response.json({ message: 'Forbidden' }, 403);
+function handleErrors(e) {
+  if (e.payload && e.status) {
+    return e;
   }
-  return run(ctx, middleware, opts)
-    .then(ret => [merge({ args: ctx.args.args }, ret), ret.status || 200])
-    .then(
-    ([resp, status]) =>
-      delete resp.status && server.response.json(resp, status)
-    )
-    .catch(e => {
-      debug(e);
-      return server.response.json(e, 500);
-    });
-};
+  return {
+    payload: {
+      message:
+        e.response && e.response.data
+          ? e.response.data
+          : 'Unexpected server error (500)'
+    },
+    status: 500
+  };
+}
+
+function executeMiddleware(fn, middleware, opts = {}) {
+  return ctx => {
+    const syncano = Syncano(ctx);
+    return run(ctx, middleware, opts)
+      .then(assertResultOK)
+      .then(ret => merge({args: ctx.args}, ret))
+      .then(ret => fn(ctx, syncano, ret))
+      .then(ret => run(result, middleware, merge(opts, {_phase: POST})))
+      .catch(handleErrors)
+      .then(r => ({payload: r.payload || r, status: r.status || 200}))
+      .then(r => syncano.response.json(r.payload, r.status));
+  };
+}
+
+executeMiddleware.Status = Status;
+executeMiddleware.OK = OK;
+executeMiddleware.ERROR = ERROR;
+
+export default executeMiddleware;

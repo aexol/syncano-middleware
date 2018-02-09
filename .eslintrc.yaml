@@ -1,0 +1,31 @@
+parserOptions:
+  ecmaVersion: 6
+  ecmaFeatures:
+    experimentalObjectRestSpread: true
+  sourceType: module
+rules:
+  curly:
+    - error
+    - all
+  eqeqeq:
+    - error
+  no-else-return:
+    - error
+    - allowElseIf: false
+  no-useless-return:
+    - error
+  no-unused-expressions:
+    - error
+  semi:
+    - error
+    - always
+  quotes:
+    - error
+    - single
+  space-in-parens:
+    - error
+  no-tabs:
+    - error
+  indent:
+    - error
+    - 2

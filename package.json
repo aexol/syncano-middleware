@@ -6,5 +6,13 @@
   "repository": "https://github.com/aexol/syncano-middleware",
   "author": "Aexol",
   "license": "MIT",
-  "private": false
+  "private": false,
+  "devDependencies": {
+    "@types/lodash.merge": "^4.6.3",
+    "eslint": "^4.17.0"
+  },
+  "dependencies": {
+    "@syncano/core": "^0.8.0",
+    "lodash.merge": "^4.6.1"
+  }
 }
