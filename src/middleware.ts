@@ -11,6 +11,7 @@ export {IPluginInterface,
   IPrePluginInterface,
   PluginProcessFnType,
 } from './types/middleware_plugin';
+export {IResultPayload} from './types/result';
 
 class Response implements IResponse {
   constructor(public payload: object = {}, public status: number = 200) {}
