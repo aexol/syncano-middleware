@@ -8,6 +8,10 @@ export interface IResult extends IResultPayload {
   merge(newResult: IResult): IResult;
 }
 
+export function isIResult(o: object): o is IResult {
+  return 'merge' in o && 'data' in o;
+}
+
 class Result {
   public data: object;
   constructor(ires: IResultPayload) {

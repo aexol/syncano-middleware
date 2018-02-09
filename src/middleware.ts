@@ -5,16 +5,20 @@ import {IMiddleware, ISyncanoContext} from './types/imiddleware';
 import {createMiddleware, IMiddlewarePayload} from './types/middleware';
 import {createOptions, IPluginOptions} from './types/options';
 import {IResponse ,isIResponse, isIResponsePayload, isIResponseStatus} from './types/response';
-import {createResult, IResult} from './types/result';
+import {createResult, IResult, IResultPayload} from './types/result';
 export {IPluginInterface,
   IPostPluginInterface,
   IPrePluginInterface,
-  PluginProcessFnType,
+  PluginPreProcessFnType,
+  PluginPostProcessFnType,
 } from './types/middleware_plugin';
 export {IResultPayload} from './types/result';
 
 class Response implements IResponse {
   constructor(public payload: object = {}, public status: number = 200) {}
+  public merge(newResponse: IResponse): IResponse {
+    return merge(new Response(), this, newResponse);
+  }
 }
 
 interface ISyncanoResponse {
@@ -47,10 +51,10 @@ function wrapResponse(r: object): IResponse {
     return r;
   }
   if (isIResponsePayload(r)) {
-    return {...r, status: 200};
+    return new Response({...r, status: 200});
   }
   if (isIResponseStatus(r)) {
-    return {...r, payload: {}};
+    return new Response({...r, payload: {}});
   }
   return new Response({
     payloaD: r,

@@ -1,16 +1,20 @@
 import {IMiddleware, ISyncanoContext} from './imiddleware';
 import {IOptions, IPluginOptions} from './options';
+import { IResponse } from './response';
 import {createResult, IResult, IResultPayload} from './result';
 import {PRE} from './symbols';
 
-export type PluginProcessFnType = (val: object, pluginOpts: object) => (IResultPayload|Promise<IResultPayload>);
+export type PluginPreProcessFnType =
+  (val: ISyncanoContext, pluginOpts: object) => (IResultPayload|Promise<IResultPayload>);
+export type PluginPostProcessFnType =
+  (val: IResponse, pluginOpts: object) => (IResponse|Promise<IResponse>);
 
-function isPluginProcessFnType(o: object): o is PluginProcessFnType {
+function isPrePluginProcessFnType(o: object): o is PluginPreProcessFnType {
   return o instanceof Function;
 }
 
 export interface IPrePluginInterface {
-  preProcess: PluginProcessFnType;
+  preProcess: PluginPreProcessFnType;
 }
 
 function isIPrePluginInterface(o: object): o is IPrePluginInterface {
@@ -18,7 +22,7 @@ function isIPrePluginInterface(o: object): o is IPrePluginInterface {
 }
 
 export interface IPostPluginInterface {
-  postProcess: PluginProcessFnType;
+  postProcess: PluginPostProcessFnType;
 }
 
 function isIPostPluginInterface(o: object): o is IPostPluginInterface {
@@ -35,19 +39,19 @@ export class MiddlewarePlugin implements IMiddleware {
           if (isIPrePluginInterface(plugin)) {
             return plugin.preProcess(v, opts.pluginOpts[this.plugin]);
           }
-          if (isPluginProcessFnType(plugin)) {
+          if (isPrePluginProcessFnType(plugin)) {
             return plugin(v, opts.pluginOpts[this.plugin]);
           }
           return {data: {}};
         }).then(createResult);
   }
-  public async post(v: object, opts: IOptions): Promise<IResult> {
+  public async post(v: IResponse, opts: IOptions): Promise<IResponse> {
         return import(this.plugin).then(plugin => {
           const payload = {};
           if (isIPostPluginInterface(plugin)) {
             return plugin.postProcess(v, opts.pluginOpts[this.plugin]);
           }
-          return {data: {}};
-        }).then(createResult);
+          return v;
+        });
   }
 }

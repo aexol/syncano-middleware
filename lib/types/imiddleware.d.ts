@@ -1,4 +1,5 @@
 import { IOptions } from './options';
+import { IResponse } from './response';
 import { IResult } from './result';
 export interface ISyncanoContext {
     args: object;
@@ -7,7 +8,7 @@ export interface ISyncanoContext {
 }
 export interface IMiddleware {
     pre(v: ISyncanoContext, opts: IOptions): Promise<IResult>;
-    post(v: object, opts: IOptions): Promise<IResult>;
+    post(v: IResponse, opts: IOptions): Promise<IResponse>;
 }
 export declare type IMiddlewarePayload = (string | IMiddlewareSeries | IMiddlewareParallel)[];
 export interface IMiddlewareSeries {
@@ -15,12 +16,4 @@ export interface IMiddlewareSeries {
 }
 export interface IMiddlewareParallel {
     parallel: IMiddlewarePayload[];
-}
-export declare abstract class BaseArrayMiddleware implements IMiddleware {
-    private phase;
-    constructor();
-    pre(v: ISyncanoContext, opts: IOptions): Promise<IResult>;
-    post(v: object, opts: IOptions): Promise<IResult>;
-    protected runPhaseOnChild(child: IMiddleware, v: object, opts: IOptions): Promise<IResult>;
-    protected abstract run(v: object, opts: IOptions): Promise<IResult>;
 }

@@ -10,4 +10,8 @@ export class PreprocessingError extends Error implements IResponse {
     };
     this.status = 400;
   }
+  public merge(newResponse: IResponse): IResponse {
+    // Do not merge this with anything1
+    return this;
+  }
 }
