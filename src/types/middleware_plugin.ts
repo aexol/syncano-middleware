@@ -25,6 +25,8 @@ function isIPostPluginInterface(o: object): o is IPostPluginInterface {
   return 'postProcess' in o;
 }
 
+export interface IPluginInterface extends IPrePluginInterface, IPostPluginInterface {}
+
 export class MiddlewarePlugin implements IMiddleware {
   constructor(public plugin: string) {}
   public async pre(v: ISyncanoContext, opts: IOptions): Promise<IResult> {

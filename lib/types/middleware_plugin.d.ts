@@ -8,6 +8,8 @@ export interface IPrePluginInterface {
 export interface IPostPluginInterface {
     postProcess: PluginProcessFnType;
 }
+export interface IPluginInterface extends IPrePluginInterface, IPostPluginInterface {
+}
 export declare class MiddlewarePlugin implements IMiddleware {
     plugin: string;
     constructor(plugin: string);

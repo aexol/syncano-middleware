@@ -6,6 +6,11 @@ import {createMiddleware, IMiddlewarePayload} from './types/middleware';
 import {createOptions, IPluginOptions} from './types/options';
 import {IResponse ,isIResponse, isIResponsePayload, isIResponseStatus} from './types/response';
 import {createResult, IResult} from './types/result';
+export {IPluginInterface,
+  IPostPluginInterface,
+  IPrePluginInterface,
+  PluginProcessFnType,
+} from './types/middleware_plugin';
 
 class Response implements IResponse {
   constructor(public payload: object = {}, public status: number = 200) {}
