@@ -1,7 +1,7 @@
 import { IMiddleware, ISyncanoContext } from './imiddleware';
 import { IOptions } from './options';
 import { IResult, IResultPayload } from './result';
-export declare type PluginProcessFnType = (val: object, pluginOpts: object) => IResultPayload;
+export declare type PluginProcessFnType = (val: object, pluginOpts: object) => (IResultPayload | Promise<IResultPayload>);
 export interface IPrePluginInterface {
     preProcess: PluginProcessFnType;
 }
