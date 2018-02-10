@@ -81,7 +81,7 @@ function handlePreprocessingError(e: (Error|IErrorWithDetails)): IResult {
 
 function executeMiddleware(fn: RunnerFunction , middleware: IMiddlewarePayload, opts: IPluginOptions = {}) {
   return (ctx: ISyncanoContext) => {
-    const syncano = Syncano(ctx);
+    const syncano = new Syncano(ctx);
     let middlewareObj: IMiddleware;
     try  {
       middlewareObj = createMiddleware(middleware);
