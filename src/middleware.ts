@@ -67,9 +67,6 @@ function wrapResponse(r: object): IResponse {
 }
 
 export type HandlerFn = (ctx: ISyncanoContext, syncano: object) => Promise<IResponse|IResponsePayload|IResponseStatus>;
-export interface IHandler {
-  handle: HandlerFn;
-}
 
 function serve(ctx: ISyncanoContext, handler: HandlerFn): Promise<object> {
   const syncano = new Syncano(ctx);
