@@ -5,6 +5,9 @@ export interface ISyncanoContext {
     meta: object;
     config: object;
 }
-export declare type IHandler = (ctx: ISyncanoContext, syncano: object) => Promise<IResponse | IResponsePayload | IResponseStatus>;
-declare function serve(ctx: ISyncanoContext, handler: IHandler): Promise<object>;
+export declare type HandlerFn = (ctx: ISyncanoContext, syncano: object) => Promise<IResponse | IResponsePayload | IResponseStatus>;
+export interface IHandler {
+    handle: HandlerFn;
+}
+declare function serve(ctx: ISyncanoContext, handler: HandlerFn): Promise<object>;
 export default serve;

@@ -38,6 +38,7 @@ function isISyncanoResponseError(o: object): o is ISyncanoResponseError {
 }
 
 function handleErrors(e: (Error|ISyncanoResponseError|IResponse)): IResponse {
+  console.log(JSON.stringify(e));
   if (isIResponse(e)) {
     return e;
   }
@@ -63,9 +64,12 @@ function wrapResponse(r: object): IResponse {
   });
 }
 
-export type IHandler = (ctx: ISyncanoContext, syncano: object) => Promise<IResponse|IResponsePayload|IResponseStatus>;
+export type HandlerFn = (ctx: ISyncanoContext, syncano: object) => Promise<IResponse|IResponsePayload|IResponseStatus>;
+export interface IHandler {
+  handle: HandlerFn;
+}
 
-function serve(ctx: ISyncanoContext, handler: IHandler): Promise<object> {
+function serve(ctx: ISyncanoContext, handler: HandlerFn): Promise<object> {
   const syncano = new Syncano(ctx);
   return handler(ctx, syncano)
       .catch(handleErrors)

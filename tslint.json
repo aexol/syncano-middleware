@@ -15,6 +15,7 @@
       "no-floating-promises": true,
       "no-invalid-this": true,
       "no-misused-new": true,
+      "no-console": false,
       "no-object-literal-type-assertion": true,
       "no-unused-expression": true,
       "no-var-keyword": true,
