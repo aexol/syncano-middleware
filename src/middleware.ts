@@ -1,7 +1,12 @@
 import Syncano from '@syncano/core';
 import * as errors from './errors/errors';
-import {IResponse ,isIResponse, isIResponsePayload, isIResponseStatus} from './types/response';
-export {IResponse} from './types/response';
+import {IResponse,
+  IResponsePayload,
+  IResponseStatus,
+  isIResponse,
+  isIResponsePayload,
+  isIResponseStatus} from './types/response';
+export {IResponse, IResponsePayload, IResponseStatus} from './types/response';
 
 export interface ISyncanoContext {
   args: object;
@@ -53,12 +58,12 @@ function wrapResponse(r: object): IResponse {
     return new Response({...r, payload: {}});
   }
   return new Response({
-    payloaD: r,
+    payload: r,
     status: 200,
   });
 }
 
-export type IHandler = (ctx: ISyncanoContext, syncano: object) => Promise<IResponse>;
+export type IHandler = (ctx: ISyncanoContext, syncano: object) => Promise<IResponse|IResponsePayload|IResponseStatus>;
 
 function serve(ctx: ISyncanoContext, handler: IHandler): Promise<object> {
   const syncano = new Syncano(ctx);
