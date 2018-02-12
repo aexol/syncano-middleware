@@ -1,26 +1,20 @@
 import Syncano from '@syncano/core';
-import merge from 'lodash.merge';
 import * as errors from './errors/errors';
-import {IMiddleware, ISyncanoContext} from './types/imiddleware';
-import {createMiddleware, IMiddlewarePayload} from './types/middleware';
-import {createOptions, IPluginOptions} from './types/options';
 import {IResponse ,isIResponse, isIResponsePayload, isIResponseStatus} from './types/response';
-import {createResult, IResult, IResultPayload} from './types/result';
-export {IPluginInterface,
-  IPostPluginInterface,
-  IPrePluginInterface,
-  PluginPreProcessFnType,
-  PluginPostProcessFnType,
-} from './types/middleware_plugin';
-export {IResultPayload} from './types/result';
 export {IResponse} from './types/response';
-export {ISyncanoContext} from './types/imiddleware';
+
+export interface ISyncanoContext {
+  args: object;
+  meta: object;
+  config: object;
+}
+
+function isISyncanoContext(o: object): o is ISyncanoContext {
+  return 'args' in o && 'meta' in o && 'config' in o;
+}
 
 class Response implements IResponse {
   constructor(public payload: object = {}, public status: number = 200) {}
-  public merge(newResponse: IResponse): IResponse {
-    return merge(new Response(), this, newResponse);
-  }
 }
 
 interface ISyncanoResponse {
@@ -64,41 +58,14 @@ function wrapResponse(r: object): IResponse {
   });
 }
 
-export type RunnerFunction = (ctx: ISyncanoContext, syncano: object, result: object) => object;
+export type IHandler = (ctx: ISyncanoContext, syncano: object) => Promise<IResponse>;
 
-interface IErrorWithDetails extends Error {
-  details: object;
-}
-function isIErrorWithDetails(o: object): o is IErrorWithDetails {
-  return 'details' in o;
-}
-function handlePreprocessingError(e: (Error|IErrorWithDetails)): IResult {
-  if (isIErrorWithDetails(e)) {
-    throw new errors.PreprocessingError(e.details);
-  }
-  throw new errors.PreprocessingError({detailedMessage: e.message});
-}
-
-function executeMiddleware(fn: RunnerFunction , middleware: IMiddlewarePayload, opts: IPluginOptions = {}) {
-  return (ctx: ISyncanoContext) => {
-    const syncano = new Syncano(ctx);
-    let middlewareObj: IMiddleware;
-    try  {
-      middlewareObj = createMiddleware(middleware);
-    } catch (e) {
-      return syncano.response.json({message: e.message}, 500);
-    }
-    const ropts = createOptions(opts);
-    return middlewareObj.pre(ctx, ropts)
-      .catch(handlePreprocessingError)
-      .then(ret => createResult({data: {args: ctx.args}}).merge(ret))
-      .then(ret => fn(ctx, syncano, ret.data))
-      .then(wrapResponse)
-      .then(ret => middlewareObj.post(ret, ropts))
+function serve(ctx: ISyncanoContext, handler: IHandler): Promise<object> {
+  const syncano = new Syncano(ctx);
+  return handler(ctx, syncano)
       .catch(handleErrors)
       .then(wrapResponse)
       .then(r => syncano.response.json(r.payload, r.status));
-  };
 }
 
-export default executeMiddleware;
+export default serve;

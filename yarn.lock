@@ -13,16 +13,6 @@
     lodash.set "^4.3.2"
     node-fetch "2.0.0-alpha.9"
 
-"@types/lodash.merge@^4.6.3":
-  version "4.6.3"
-  resolved "https://registry.yarnpkg.com/@types/lodash.merge/-/lodash.merge-4.6.3.tgz#a41c49fe404c4bfb653ae6dda76abeedeace14ff"
-  dependencies:
-    "@types/lodash" "*"
-
-"@types/lodash@*":
-  version "4.14.102"
-  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.102.tgz#586a3e22385fc79b07cef9c5a1c8a5387986fbc8"
-
 "@types/node@^4.0.36":
   version "4.0.36"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-4.0.36.tgz#394672a25c7d49b48698d5fb59d3ea72d2b6e5fa"
@@ -201,7 +191,7 @@ lodash.get@^4.4.2:
   version "4.4.2"
   resolved "https://registry.yarnpkg.com/lodash.get/-/lodash.get-4.4.2.tgz#2d177f652fa31e939b4438d5341499dfa3825e99"
 
-lodash.merge@^4.6.0, lodash.merge@^4.6.1:
+lodash.merge@^4.6.0:
   version "4.6.1"
   resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.1.tgz#adc25d9cb99b9391c59624f379fbba60d7111d54"
 

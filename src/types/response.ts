@@ -15,7 +15,6 @@ export function isIResponseStatus(o: object): o is IResponseStatus {
 }
 
 export interface IResponse extends IResponsePayload, IResponseStatus {
-  merge(newResponse: IResponse): IResponse;
 }
 
 export function isIResponse(o: object): o is IResponse {
