@@ -38,14 +38,16 @@ function isISyncanoResponseError(o: object): o is ISyncanoResponseError {
 }
 
 function handleErrors(e: (Error|ISyncanoResponseError|IResponse)): IResponse {
-  console.log(JSON.stringify(e));
   if (isIResponse(e)) {
     return e;
   }
   if (isISyncanoResponseError(e)) {
     return new Response({message: e.response.data}, 500);
   }
-  return new Response({message: e.message}, 500);
+  if ('message' in e) {
+    return new Response({message: e.message}, 500);
+  }
+  return new Response({details: e}, 500);
 }
 
 function wrapResponse(r: object): IResponse {
