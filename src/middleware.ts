@@ -9,6 +9,8 @@ import {IResponse,
 export {IResponse, IResponsePayload, IResponseStatus} from './types/response';
 
 export interface ISyncanoRequestArgs  {
+  // Ignore any here on purpose.
+  // tslint:disable-next-line
   [s: string]: any;
 }
 
@@ -17,6 +19,8 @@ export function isISyncanoRequestArgs(o: object): o is ISyncanoRequestArgs {
 }
 
 export interface ISyncanoRequestConfig  {
+  // Ignore any here on purpose.
+  // tslint:disable-next-line
   [s: string]: any;
 }
 

@@ -9,7 +9,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "build": "npx tsc"
+    "build": "rm -r lib && npx tsc"
   },
   "devDependencies": {
     "@types/jest": "^22.1.2",
