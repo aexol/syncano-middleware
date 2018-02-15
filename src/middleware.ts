@@ -12,8 +12,16 @@ export interface ISyncanoRequestArgs  {
   [s: string]: any;
 }
 
+export function isISyncanoRequestArgs(o: object): o is ISyncanoRequestArgs {
+  return true;
+}
+
 export interface ISyncanoRequestConfig  {
   [s: string]: any;
+}
+
+export function isISyncanoRequestConfig(o: object): o is ISyncanoRequestConfig {
+  return true;
 }
 
 export interface ISyncanoRequestMetaRequest  {
@@ -40,25 +48,46 @@ export interface ISyncanoRequestMeta  {
   metadata: ISyncanoRequestMetaMetadataParameters;
 }
 
+export function isISyncanoRequestMeta(o: object): o is ISyncanoRequestMeta {
+  return 'socket' in o
+      && 'request' in o
+      && 'instance' in o
+      && 'token' in o
+      && 'executor' in o
+      && 'executed_by' in o
+      && 'api_host' in o
+      && 'space_host' in o
+      && 'metadata' in o;
+}
+
 export interface ISyncanoContext {
   args: ISyncanoRequestArgs;
   meta: ISyncanoRequestMeta;
   config: ISyncanoRequestConfig;
 }
 
-function isISyncanoContext(o: object): o is ISyncanoContext {
-  return 'args' in o && 'meta' in o && 'config' in o;
+export function isISyncanoContext(o: object): o is ISyncanoContext {
+  const ctx = o as ISyncanoContext;
+  return 'args' in o
+    && isISyncanoRequestArgs(ctx.args)
+    && 'meta' in o
+    && isISyncanoRequestMeta(ctx.meta)
+    && 'config' in o
+    && isISyncanoRequestConfig(ctx.config);
 }
 
 class Response implements IResponse {
-  constructor(public payload: object = {}, public status: number = 200) {}
+  constructor(public payload: object = {},
+              public status: number = 200,
+              public mimetype: string = 'application/json',
+              public headers: object = {}) {}
 }
 
-interface ISyncanoResponse {
+export interface ISyncanoResponse {
   data: object;
   status: number;
 }
-function isISyncanoResponse(o: object): o is ISyncanoResponse {
+export function isISyncanoResponse(o: object): o is ISyncanoResponse {
   return 'data' in o && 'status' in o;
 }
 
@@ -87,15 +116,12 @@ function wrapResponse(r: object): IResponse {
     return r;
   }
   if (isIResponsePayload(r)) {
-    return new Response({...r, status: 200});
+    return new Response(r.payload);
   }
   if (isIResponseStatus(r)) {
-    return new Response({...r, payload: {}});
+    return new Response({}, r.status);
   }
-  return new Response({
-    payload: r,
-    status: 200,
-  });
+  return new Response(r, 200);
 }
 
 export type HandlerFn = (ctx: ISyncanoContext, syncano: object) => Promise<IResponse|IResponsePayload|IResponseStatus>;
@@ -105,7 +131,17 @@ function serve(ctx: ISyncanoContext, handler: HandlerFn): Promise<object> {
   return handler(ctx, syncano)
       .catch(handleErrors)
       .then(wrapResponse)
-      .then(r => syncano.response.json(r.payload, r.status));
+      .then(r => r.mimetype === 'application/json' ?
+        {...r, payload: JSON.stringify(r.payload)} :
+        r,
+      )
+      .then(r => syncano.response(r.payload, r.status, r.mimetype, r.headers));
 }
 
+export function response( payload: object,
+                          status: number = 200,
+                          mimetype: string = 'application/json',
+                          headers: object = {}): IResponse {
+  return new Response(payload, status, mimetype, headers);
+}
 export default serve;

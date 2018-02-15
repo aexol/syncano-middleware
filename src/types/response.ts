@@ -15,6 +15,8 @@ export function isIResponseStatus(o: object): o is IResponseStatus {
 }
 
 export interface IResponse extends IResponsePayload, IResponseStatus {
+  mimetype?: string;
+  headers?: object;
 }
 
 export function isIResponse(o: object): o is IResponse {
