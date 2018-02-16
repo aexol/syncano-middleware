@@ -23,3 +23,7 @@ export interface IResponse extends IResponsePayload, IResponseStatus {
 export function isIResponse(o: object): o is IResponse {
   return isIResponsePayload(o) && isIResponseStatus(o);
 }
+
+export class NamedResponse {
+  constructor(public responseName: string, public content: object) {}
+}

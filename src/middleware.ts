@@ -6,7 +6,8 @@ import {IResponse,
   IResponseStatus,
   isIResponse,
   isIResponsePayload,
-  isIResponseStatus} from './types/response';
+  isIResponseStatus,
+  NamedResponse} from './types/response';
 export {IResponse, IResponsePayload, IResponseStatus} from './types/response';
 
 export function isRequestArgs(o: object): o is RequestArgs {
@@ -19,6 +20,10 @@ export function isRequestConfig(o: object): o is RequestConfig {
 
 export function isRequestMeta(o: object): o is RequestMeta {
   return true;
+}
+
+function isNamedResponse(o: object): o is NamedResponse {
+  return 'responseName' in o && 'content' in o;
 }
 
 export function isContext(o: object): o is Context {
@@ -66,7 +71,7 @@ function handleErrors(e: (Error|ISyncanoResponseError|IResponse)): IResponse {
   return new Response({details: e}, 500);
 }
 
-function wrapResponse(r: object): IResponse {
+function wrapResponse(r: object): (IResponse|NamedResponse) {
   if (isIResponse(r)) {
     return r;
   }
@@ -87,6 +92,9 @@ function serve(ctx: Context, handler: HandlerFn): Promise<object> {
       .catch(handleErrors)
       .then(wrapResponse)
       .then(r => {
+        if (isNamedResponse(r)) {
+          return r;
+        }
         const mimetype = r.mimetype || 'application/json';
         const isJson = r.mimetype === 'application/json';
         const headers: Headers = r.headers || {};
@@ -98,13 +106,44 @@ function serve(ctx: Context, handler: HandlerFn): Promise<object> {
         };
       },
       )
-      .then(r => syncano.response(r.payload, r.status, r.mimetype, r.headers));
+      .then(r => isNamedResponse(r) ?
+        (
+          // tslint:disable-next-line
+          syncano.response[r.responseName] as (content: any) => any
+        )(r.content) :
+        syncano.response(r.payload, r.status, r.mimetype, r.headers) );
 }
 
-export function response( payload: object,
-                          status: number = 200,
-                          mimetype: string = 'application/json',
-                          headers: Headers = {}): IResponse {
-  return new Response(payload, status, mimetype, headers);
+export interface IResponseFactory {
+  ( payload: object,
+    status?: number,
+    mimetype?: string,
+    headers?: Headers): IResponse;
+  [s: string]: (content: object) => NamedResponse;
 }
+type defaultResponse = (payload: object,
+                        status?: number,
+                        mimetype?: string,
+                        headers?: Headers) => IResponse;
+export const response: IResponseFactory = (() => {
+  // tslint:disable-next-line
+  const fn: any = ( payload: object,
+                    status: number = 200,
+                    mimetype: string = 'application/json',
+                    headers: Headers = {}): IResponse => {
+                      return new Response(payload, status, mimetype, headers);
+  };
+
+  fn.get = (target: object, name: string) => {
+    return (content: object) => new NamedResponse(name, content);
+  };
+  // tslint:disable-next-line
+  fn.apply = (target: defaultResponse, thisArg: defaultResponse, args: any[]) : any => {
+    return target(args[0], args[1], args[2], args[3]);
+  };
+  const respHandler: ProxyHandler<defaultResponse
+  > = fn;
+  return new Proxy(fn, respHandler);
+})();
+
 export default serve;

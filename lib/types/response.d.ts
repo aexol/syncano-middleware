@@ -12,3 +12,8 @@ export interface IResponse extends IResponsePayload, IResponseStatus {
     headers?: Headers;
 }
 export declare function isIResponse(o: object): o is IResponse;
+export declare class NamedResponse {
+    responseName: string;
+    content: object;
+    constructor(responseName: string, content: object);
+}
