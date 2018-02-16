@@ -1,4 +1,5 @@
 import Syncano, {Context, Headers, RequestArgs, RequestConfig, RequestMeta} from '@syncano/core';
+import Server from '@syncano/core';
 import * as errors from './errors/errors';
 import {IResponse,
   IResponsePayload,
@@ -78,7 +79,7 @@ function wrapResponse(r: object): IResponse {
   return new Response(r, 200);
 }
 
-export type HandlerFn = (ctx: Context, syncano: object) => Promise<IResponse|IResponsePayload|IResponseStatus>;
+export type HandlerFn = (ctx: Context, syncano: Server) => Promise<IResponse|IResponsePayload|IResponseStatus>;
 
 function serve(ctx: Context, handler: HandlerFn): Promise<object> {
   const syncano = new Syncano(ctx);
