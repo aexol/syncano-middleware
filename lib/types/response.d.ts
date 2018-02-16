@@ -1,3 +1,4 @@
+import { Headers } from '@syncano/core';
 export interface IResponsePayload {
     payload: object;
 }
@@ -8,6 +9,6 @@ export interface IResponseStatus {
 export declare function isIResponseStatus(o: object): o is IResponseStatus;
 export interface IResponse extends IResponsePayload, IResponseStatus {
     mimetype?: string;
-    headers?: object;
+    headers?: Headers;
 }
 export declare function isIResponse(o: object): o is IResponse;
