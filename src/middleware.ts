@@ -8,7 +8,10 @@ import {IResponse,
   isIResponsePayload,
   isIResponseStatus,
   NamedResponse} from './types/response';
-export {IResponse, IResponsePayload, IResponseStatus} from './types/response';
+export {IResponse,
+  IResponsePayload,
+  IResponseStatus,
+  NamedResponse} from './types/response';
 
 export function isRequestArgs(o: object): o is RequestArgs {
   return true;
@@ -84,7 +87,8 @@ function wrapResponse(r: object): (IResponse|NamedResponse) {
   return new Response(r, 200);
 }
 
-export type HandlerFn = (ctx: Context, syncano: Server) => Promise<IResponse|IResponsePayload|IResponseStatus>;
+export type HandlerFn = (ctx: Context, syncano: Server)
+    => Promise<IResponse|IResponsePayload|IResponseStatus|NamedResponse>;
 
 function serve(ctx: Context, handler: HandlerFn): Promise<object> {
   const syncano = new Syncano(ctx);
