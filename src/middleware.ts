@@ -75,6 +75,9 @@ function handleErrors(e: (Error|ISyncanoResponseError|IResponse)): IResponse {
 }
 
 function wrapResponse(r: object): (IResponse|NamedResponse) {
+  if(isNamedResponse(r)) {
+    return r;
+  }
   if (isIResponse(r)) {
     return r;
   }
