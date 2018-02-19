@@ -55,7 +55,7 @@ export function isISyncanoResponse(o: object): o is ISyncanoResponse {
   return 'data' in o && 'status' in o;
 }
 
-interface ISyncanoResponseError {
+interface ISyncanoResponseError extends Error {
   response: ISyncanoResponse;
 }
 function isISyncanoResponseError(o: object): o is ISyncanoResponseError {
@@ -68,7 +68,9 @@ function handleErrors(e: (Error|ISyncanoResponseError|IResponse),
   if (isIResponse(e)) {
     return e;
   }
-  syncano.logger(get(ctx, 'meta.executor', 'unknown').error((e as Error).stack));
+  const logger = syncano.logger(get(ctx, 'meta.executor', 'unknown'));
+  logger.error(e.stack || '<--- no stack info --->');
+  logger.error(e.message || '<-- no error message -->');
   if (isISyncanoResponseError(e)) {
     return new Response({message: e.response.data}, 500);
   }
