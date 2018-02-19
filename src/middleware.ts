@@ -1,5 +1,6 @@
 import Syncano, {Context, Headers, RequestArgs, RequestConfig, RequestMeta} from '@syncano/core';
 import Server from '@syncano/core';
+import get from 'lodash.get';
 import * as errors from './errors/errors';
 import {IResponse,
   IResponsePayload,
@@ -61,10 +62,13 @@ function isISyncanoResponseError(o: object): o is ISyncanoResponseError {
   return 'response' in o && isISyncanoResponse((o as ISyncanoResponseError).response);
 }
 
-function handleErrors(e: (Error|ISyncanoResponseError|IResponse)): IResponse {
+function handleErrors(e: (Error|ISyncanoResponseError|IResponse),
+                      ctx: Context,
+                      syncano: Server): IResponse {
   if (isIResponse(e)) {
     return e;
   }
+  syncano.logger(get(ctx, 'meta.executor', 'unknown').error((e as Error).stack));
   if (isISyncanoResponseError(e)) {
     return new Response({message: e.response.data}, 500);
   }
@@ -75,7 +79,7 @@ function handleErrors(e: (Error|ISyncanoResponseError|IResponse)): IResponse {
 }
 
 function wrapResponse(r: object): (IResponse|NamedResponse) {
-  if(isNamedResponse(r)) {
+  if (isNamedResponse(r)) {
     return r;
   }
   if (isIResponse(r)) {
@@ -96,7 +100,7 @@ export type HandlerFn = (ctx: Context, syncano: Server)
 function serve(ctx: Context, handler: HandlerFn): Promise<object> {
   const syncano = new Syncano(ctx);
   return handler(ctx, syncano)
-      .catch(handleErrors)
+      .catch(e => handleErrors(e, ctx, syncano))
       .then(wrapResponse)
       .then(r => {
         if (isNamedResponse(r)) {
