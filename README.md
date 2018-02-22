@@ -58,8 +58,10 @@ endpoints:
 
 src/utils.js
 ```javascript
-export async function loggedIn(fn) {
-    return (ctx, syncano) => {
+import {response} from 'syncano-middleware';
+
+export function loggedIn(fn) {
+    return async (ctx, syncano) => {
         if(!ctx.meta.user) {
             return response.forbidden({message: 'You must be logged in to perform this action.'})
         }
