@@ -102,7 +102,6 @@ export type HandlerFn = (ctx: Context, syncano: Server)
 function serve(ctx: Context, handler: HandlerFn): Promise<object> {
   const syncano = new Syncano(ctx);
   return handler(ctx, syncano)
-      .catch(e => handleErrors(e, ctx, syncano))
       .then(wrapResponse)
       .then(r => {
         if (isNamedResponse(r)) {
@@ -125,6 +124,12 @@ function serve(ctx: Context, handler: HandlerFn): Promise<object> {
           syncano.response[r.responseName] as (content: any) => any
         )(r.content) :
         syncano.response(r.payload, r.status, r.mimetype, r.headers) );
+}
+
+export function cleanExit(handler: HandlerFn) {
+  return (ctx: Context, syncano: Server) => {
+    return handler(ctx, syncano).catch(e => handleErrors(e, ctx, syncano));
+  };
 }
 
 export interface IResponseFactory {

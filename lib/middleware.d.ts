@@ -1,4 +1,4 @@
-import { Context, Headers, RequestArgs, RequestConfig, RequestMeta } from '@syncano/core';
+import Syncano, { Context, Headers, RequestArgs, RequestConfig, RequestMeta } from '@syncano/core';
 import Server from '@syncano/core';
 import { IResponse, IResponsePayload, IResponseStatus, NamedResponse } from './types/response';
 export { IResponse, IResponsePayload, IResponseStatus, NamedResponse } from './types/response';
@@ -13,6 +13,7 @@ export interface ISyncanoResponse {
 export declare function isISyncanoResponse(o: object): o is ISyncanoResponse;
 export declare type HandlerFn = (ctx: Context, syncano: Server) => Promise<IResponse | IResponsePayload | IResponseStatus | NamedResponse>;
 declare function serve(ctx: Context, handler: HandlerFn): Promise<object>;
+export declare function cleanExit(handler: HandlerFn): (ctx: Context, syncano: Syncano) => Promise<IResponsePayload | IResponseStatus | IResponse | NamedResponse>;
 export interface IResponseFactory {
     (payload: object, status?: number, mimetype?: string, headers?: Headers): IResponse;
     [s: string]: (content: object) => NamedResponse;
