@@ -1,6 +1,6 @@
 {
   "name": "syncano-middleware",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Syncano middleware helper",
   "main": "lib/middleware.js",
   "types": "lib/middleware.d.ts",
@@ -9,7 +9,9 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "build": "rm -r lib && npx tsc"
+    "build": "rm -rf lib && tsc",
+    "prepublish": "npm run test && npm run build",
+    "test": "jest"
   },
   "devDependencies": {
     "@types/jest": "^22.1.2",
