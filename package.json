@@ -1,5 +1,5 @@
 {
-  "name": "syncano-middleware",
+  "name": "@aexol/syncano-middleware",
   "version": "0.1.0",
   "description": "Syncano middleware helper",
   "main": "lib/middleware.js",
@@ -10,7 +10,8 @@
   "private": false,
   "scripts": {
     "build": "rm -rf lib && tsc",
-    "prepublish": "npm run test && npm run build",
+    "prepare": "npm run build",
+    "prepack": "npm run test",
     "test": "jest"
   },
   "devDependencies": {
