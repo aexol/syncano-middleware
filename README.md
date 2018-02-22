@@ -7,7 +7,7 @@ Simple library easing writing of reusable middlewares for socket.
 ## Installation
 
 ```sh
-$ npm install https://github.com/aexol/syncano-middleware.git
+$ npm install @aexol/syncano-middleware
 ```
 
 ## Usage
@@ -28,7 +28,7 @@ endpoints:
 
 src/example.js
 ```javascript
-import serve, {response} from 'syncano-middleware';
+import serve, {response} from '@aexol/syncano-middleware';
 
 async function run(ctx, syncano) {
     return response.success({message: 'Hello world!'})
@@ -58,7 +58,7 @@ endpoints:
 
 src/utils.js
 ```javascript
-import {response} from 'syncano-middleware';
+import {response} from '@aexol/syncano-middleware';
 
 export function loggedIn(fn) {
     return async (ctx, syncano) => {
@@ -72,7 +72,7 @@ export function loggedIn(fn) {
 
 src/example.js
 ```javascript
-import serve, {response} from 'syncano-middleware';
+import serve, {response} from '@aexol/syncano-middleware';
 import {loggedIn} from './utils'
 
 async function run(ctx, syncano) {
@@ -107,7 +107,7 @@ endpoints:
 
 src/example.js
 ```javascript
-import serve, {response, cleanExit} from 'syncano-middleware';
+import serve, {response, cleanExit} from '@aexol/syncano-middleware';
 
 async function run(ctx, syncano) {
     return response.success({message: 'Hello world!'})
