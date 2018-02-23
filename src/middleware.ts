@@ -40,7 +40,7 @@ export function isContext(o: object): o is Context {
     && isRequestConfig(ctx.config as RequestConfig);
 }
 
-class Response implements IResponse {
+export class Response implements IResponse {
   constructor(public payload: object = {},
               public status: number = 200,
               public mimetype: string = 'application/json',
@@ -138,7 +138,7 @@ export interface IResponseFactory {
     status?: number,
     mimetype?: string,
     headers?: Headers): IResponse;
-  [s: string]: (content: object) => NamedResponse;
+  [s: string]: (content: object) => (NamedResponse|IResponse);
 }
 type defaultResponse = (payload: object,
                         status?: number,
