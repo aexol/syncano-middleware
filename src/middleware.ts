@@ -96,8 +96,9 @@ function wrapResponse(r: object): (IResponse|NamedResponse) {
   return new Response(r, 200);
 }
 
+export type HandlerReturn = IResponse|IResponsePayload|IResponseStatus|NamedResponse;
 export type HandlerFn = (ctx: Context, syncano: Server)
-    => Promise<IResponse|IResponsePayload|IResponseStatus|NamedResponse>;
+    => Promise<HandlerReturn>;
 
 function serve(ctx: Context, handler: HandlerFn): Promise<object> {
   const syncano = new Syncano(ctx);
