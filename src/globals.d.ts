@@ -44,6 +44,7 @@ declare module '@syncano/core' {
     api_host?: string;
     space_host?: string;
     metadata?: RequestMetaMetadataParameters;
+    name?: string;
   }
 
   export interface Context {
@@ -67,6 +68,7 @@ declare module '@syncano/core' {
     meta: object;
     setResponse?: (httpResponse: HttpResponseT) => void;
     HttpResponse?: HttpResponseT;
+    [s: string]: any
   }
 
   export interface Config extends Settings {
@@ -99,6 +101,7 @@ declare module '@syncano/core' {
     follow?: number;
   }
   export interface QueryBuilder {
+    instance: Settings
     query: Query
     queries: Query[]
     relationships: Relationship[]
@@ -121,17 +124,18 @@ declare module '@syncano/core' {
 
   export interface Endpoint extends QueryBuilder {
     post<T>(endpoint: string,
-      body: object,
-      options: FetchOptions): Promise<T>
+      body?: object,
+      options?: FetchOptions): Promise<T>
     get<T>(endpoint: string,
-      data: object,
-      options: FetchOptions): Promise<T>
+      data?: object,
+      options?: FetchOptions): Promise<T>
     delete<T>(endpoint: string,
-      data: object,
-      options: FetchOptions): Promise<T>
+      data?: object,
+      options?: FetchOptions): Promise<T>
     put<T>(endpoint: string,
-      data: object,
-      options: FetchOptions): Promise<T>
+      data?: object,
+      optionsi?: FetchOptions): Promise<T>
+    _url(socketName: string): string
   }
 
   export interface Channel extends QueryBuilder {
