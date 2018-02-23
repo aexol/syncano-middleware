@@ -154,6 +154,9 @@ export const response: IResponseFactory = (() => {
   };
 
   fn.get = (target: object, name: string) => {
+    if (name === 'json') {
+      return (content: object, status: number = 200) => new Response(content, status);
+    }
     return (content: object) => new NamedResponse(name, content);
   };
   // tslint:disable-next-line
