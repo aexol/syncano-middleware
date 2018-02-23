@@ -139,6 +139,7 @@ export interface IResponseFactory {
     mimetype?: string,
     headers?: Headers): IResponse;
   [s: string]: (content: object) => (NamedResponse|IResponse);
+  json: (content: object, status?: number) => IResponse;
 }
 type defaultResponse = (payload: object,
                         status?: number,
@@ -153,7 +154,8 @@ export const response: IResponseFactory = (() => {
                       return new Response(payload, status, mimetype, headers);
   };
 
-  fn.get = (target: object, name: string) => {
+  fn.get = (target: object, name: string):
+              ((content: object) => (NamedResponse|IResponse)) => {
     if (name === 'json') {
       return (content: object, status: number = 200) => new Response(content, status);
     }
