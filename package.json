@@ -1,6 +1,6 @@
 {
   "name": "@aexol/syncano-middleware",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Syncano middleware helper",
   "main": "lib/middleware.js",
   "types": "lib/middleware.d.ts",
