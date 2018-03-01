@@ -109,7 +109,7 @@ function serve(ctx: Context, handler: HandlerFn): Promise<object> {
           return r;
         }
         const mimetype = r.mimetype || 'application/json';
-        const isJson = r.mimetype === 'application/json';
+        const isJson = mimetype === 'application/json';
         const headers: Headers = r.headers || {};
         return {
           ...r,
@@ -117,14 +117,16 @@ function serve(ctx: Context, handler: HandlerFn): Promise<object> {
           mimetype,
           payload: isJson ? JSON.stringify(r.payload) : r.payload,
         };
-      },
-      )
-      .then(r => isNamedResponse(r) ?
-        (
+      })
+      .then(r => {
+        if (isNamedResponse(r)) {
+          const namedResponse =
           // tslint:disable-next-line
-          syncano.response[r.responseName] as (content: any) => any
-        )(r.content) :
-        syncano.response(r.payload, r.status, r.mimetype, r.headers) );
+              (syncano.response[r.responseName] as (content: any) => any)
+          return namedResponse(r.content);
+        }
+        return syncano.response(r.payload, r.status, r.mimetype, r.headers);
+      });
 }
 
 export function cleanExit(handler: HandlerFn) {
